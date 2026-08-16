@@ -1,25 +1,45 @@
-# AREN Android / Kotlin
+# AREN — Expo / React Native
 
-.gradle/
-build/
-**/build/
-.idea/
-*.iml
-.externalNativeBuild/
-.cxx/
-local.properties
-captures/
-.DS_Store
-Thumbs.db
+# Dependencies
+node_modules/
 
-# Secrets
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+/ios
+/android
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+
+# Metro
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+logs/
+
+# Secrets — never commit
 .env
 .env.*
-*.keystore
-*.jks
+!.env.example
 google-services.json
+GoogleService-Info.plist
 
-# Generated
-out/
-tmp/
-logs/
+# System
+.DS_Store
+Thumbs.db
+*.pem
+
+# TypeScript
+*.tsbuildinfo

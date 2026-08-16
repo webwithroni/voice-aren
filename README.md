@@ -55,14 +55,27 @@ The Orb is not simply a button. It is a state visualization system.
 
 ## Technology Direction
 
-- Android
-- Kotlin
-- Jetpack Compose
-- Material 3 foundation with a custom AREN visual system
-- Kotlin Coroutines
-- StateFlow
-- ViewModel architecture
-- Gemini Live WebSocket for real-time voice interaction
+AREN is Android-first. Phase 01 establishes the app shell and visual system on
+a cross-platform Expo / React Native foundation:
+
+- Expo (SDK 57)
+- React Native (New Architecture)
+- TypeScript (strict)
+- Expo Router (file-based routing)
+- React Native Reanimated (Orb motion / state animation)
+- React Native Gesture Handler (Orb voice-surface interaction)
+- React Native SVG (layered Orb rendering)
+- Feature-based architecture with centralized design tokens
+
+The voice runtime is kept behind an abstraction seam so the transport can
+evolve independently of the UI:
+
+- Gemini Live WebSocket for real-time voice interaction (Phase 02+)
+
+> Note: earlier drafts referenced a native Kotlin / Jetpack Compose shell.
+> The Phase 01 application shell is implemented with Expo / React Native as
+> selected for this build; deeper native Android capabilities (device control,
+> accessibility services) remain planned for later phases.
 
 ## Architecture
 
@@ -72,13 +85,16 @@ Voice Runtime
 ↓
 AREN Runtime State
 ↓
-StateFlow / ViewModel
+AREN State (React Context / hooks)
 ↓
 AREN UI
 ↓
 Orb + Voice + Context + Controls
 
-The UI must remain independent from the Gemini implementation so the voice runtime can evolve without rewriting the interface.
+The UI must remain independent from the Gemini implementation so the voice
+runtime can evolve without rewriting the interface. In Phase 01 this seam is
+the `VoiceRuntime` interface (`src/types/aren.ts`), backed by a local,
+no-network implementation (`src/state/arenState/voiceRuntime.ts`).
 
 ## Design Language
 
@@ -175,7 +191,26 @@ The logo and Orb are separate systems: the logo identifies AREN; the Orb express
 
 ## Current Status
 
-Phase 01 — Preparing
+Phase 01 — Implemented (Expo / React Native foundation).
+
+See [docs/PHASE_01.md](docs/PHASE_01.md) for the full implementation report,
+architecture, and how to run the app on Android.
+
+## Getting Started
+
+```bash
+yarn install
+yarn start        # Expo dev server (press "a" for Android)
+# or
+yarn android      # build & launch on a connected Android device/emulator
+```
+
+Project checks:
+
+```bash
+yarn typecheck    # tsc --noEmit
+yarn lint         # eslint
+```
 
 ## License
 

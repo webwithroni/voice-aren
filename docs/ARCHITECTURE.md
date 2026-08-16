@@ -26,6 +26,17 @@ UI → Runtime State → Voice Runtime
 
 The UI must not directly depend on Gemini WebSocket implementation details.
 
+### Phase 01 realization (Expo / React Native)
+
+The dependency direction above is enforced in code:
+
+- UI (`src/components`, `src/features`) depends on the AREN state layer only.
+- State (`src/state/arenState`) exposes `ArenState` via React Context and holds
+  a reference to a `VoiceRuntime` implementation — never to Gemini directly.
+- `VoiceRuntime` (`src/types/aren.ts`) is the abstraction seam. Phase 01 ships
+  `LocalVoiceRuntime` (no network, no fabricated responses). Phase 02 will add a
+  `GeminiLiveVoiceRuntime` implementing the same interface with no UI changes.
+
 ## State Model
 
 IDLE

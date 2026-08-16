@@ -2,16 +2,16 @@
 
 ## Phase 01 — Foundation
 
-Status: IN PROGRESS
+Status: IMPLEMENTED
 
-- Project bootstrap
-- Brand identity
-- Design system
-- Orb
-- State architecture
-- Home
-- Accessibility
-- Development simulator
+- [x] Project bootstrap (Expo / React Native / TypeScript / Expo Router)
+- [x] Brand identity (logo reference in `assets/brand/`)
+- [x] Design system (colors, typography, spacing, radius, motion tokens)
+- [x] Orb (layered, animated, single visual identity)
+- [x] State architecture (`ArenState` + `VoiceRuntime` abstraction seam)
+- [x] Home screen
+- [x] Accessibility (scalable text, semantic labels, reduced-motion, announcements)
+- [x] Development state simulator
 
 ## Phase 02 — Gemini Live
 
