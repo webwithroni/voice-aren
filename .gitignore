@@ -43,3 +43,6 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+*.env
+credentials.json
+.credentials
