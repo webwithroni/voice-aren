@@ -10,6 +10,7 @@ import type { ArenState } from '@/types/aren';
 interface StateSimulatorProps {
   current: ArenState;
   onSelect: (state: ArenState) => void;
+  runtimeLabel?: string;
 }
 
 /**
@@ -17,7 +18,7 @@ interface StateSimulatorProps {
  * locally, without any voice runtime. Collapsed by default to keep the home
  * screen calm and Orb-dominant.
  */
-export function StateSimulator({ current, onSelect }: StateSimulatorProps) {
+export function StateSimulator({ current, onSelect, runtimeLabel }: StateSimulatorProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,6 +39,12 @@ export function StateSimulator({ current, onSelect }: StateSimulatorProps) {
           {open ? 'Hide' : `${metaFor(current).label}`}
         </AppText>
       </Pressable>
+
+      {runtimeLabel ? (
+        <AppText variant="caption" color={colors.text.tertiary} style={styles.runtime}>
+          {runtimeLabel}
+        </AppText>
+      ) : null}
 
       {open ? (
         <ScrollView
@@ -88,6 +95,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingTop: spacing.sm,
     paddingRight: spacing.base,
+  },
+  runtime: {
+    paddingTop: spacing.xs,
   },
   chip: {
     minHeight: TOUCH_TARGET_MIN,

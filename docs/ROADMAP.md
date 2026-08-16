@@ -13,15 +13,22 @@ Status: IMPLEMENTED
 - [x] Accessibility (scalable text, semantic labels, reduced-motion, announcements)
 - [x] Development state simulator
 
-## Phase 02 — Gemini Live
+## Phase 02 — Gemini Live (voice runtime + audio foundation)
 
-Status: PLANNED
+Status: IMPLEMENTED (architecture) · SIMULATED (runtime) · Gemini connection DEFERRED
 
-- Gemini Live WebSocket
-- Real-time audio input
-- Real-time audio output
-- Voice lifecycle
-- Connection recovery
+- [x] Full `VoiceRuntime` interface (connect/disconnect/start/stop/sendAudio/
+      sendText/interrupt + lifecycle events)
+- [x] `LocalEchoVoiceRuntime` — realistic simulated lifecycle (drives the Orb)
+- [x] `GeminiLiveVoiceRuntime` — architecture around `gemini-3.1-flash-live-preview`,
+      ephemeral-token seam, **connection disabled** (no key in client)
+- [x] Real-time audio architecture (PCM 16 kHz in / 24 kHz out, chunk sizing,
+      capture/playback interfaces)
+- [ ] Live Gemini WebSocket connection — DEFERRED (needs secure token backend)
+- [ ] Native microphone capture + audio playback — REQUIRES device/dev build
+- [ ] Connection recovery / session resumption — architected, not activated
+
+See [docs/PHASE_02.md](PHASE_02.md).
 
 ## Phase 03 — Conversation
 

@@ -9,9 +9,9 @@ import React, {
 } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
+import { createVoiceRuntime } from '@/services/voice';
 import type { ArenState, ArenStateMeta, VoiceRuntime, VoiceRuntimeStatus } from '@/types/aren';
 import { metaFor } from './stateMeta';
-import { LocalVoiceRuntime } from './voiceRuntime';
 
 /** How long a transient state (e.g. SUCCESS) lingers before returning to IDLE. */
 const TRANSIENT_DURATION_MS = 1600;
@@ -20,9 +20,11 @@ interface ArenStateValue {
   state: ArenState;
   meta: ArenStateMeta;
   connection: VoiceRuntimeStatus;
+  /** Identity of the active runtime (e.g. simulated vs Gemini). */
+  runtimeLabel: string;
   /** Directly set a state (used by the developer state simulator). */
   setState: (next: ArenState) => void;
-  /** Primary voice interaction: IDLE <-> LISTENING. */
+  /** Primary voice interaction: IDLE <-> LISTENING via the runtime. */
   toggleListening: () => void;
 }
 
@@ -30,20 +32,17 @@ const ArenStateContext = createContext<ArenStateValue | null>(null);
 
 interface ProviderProps {
   children: React.ReactNode;
-  /** Injectable runtime — defaults to the Phase 01 local runtime. */
+  /** Injectable runtime — defaults to the selected runtime (local echo). */
   runtime?: VoiceRuntime;
   initialState?: ArenState;
 }
 
-export function ArenStateProvider({
-  children,
-  runtime,
-  initialState = 'IDLE',
-}: ProviderProps) {
-  const runtimeRef = useRef<VoiceRuntime>(runtime ?? new LocalVoiceRuntime());
+export function ArenStateProvider({ children, runtime, initialState = 'IDLE' }: ProviderProps) {
+  const [rt] = useState<VoiceRuntime>(() => runtime ?? createVoiceRuntime());
   const [state, setStateInternal] = useState<ArenState>(initialState);
   const [connection, setConnection] = useState<VoiceRuntimeStatus>('disconnected');
   const transientTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateRef = useRef<ArenState>(initialState);
 
   const clearTransient = useCallback(() => {
     if (transientTimer.current) {
@@ -52,17 +51,18 @@ export function ArenStateProvider({
     }
   }, []);
 
-  const setState = useCallback(
+  // The provider is the single source of truth: apply a state, announce it for
+  // screen readers, and schedule the return to IDLE for transient states.
+  const applyState = useCallback(
     (next: ArenState) => {
       clearTransient();
+      stateRef.current = next;
       setStateInternal(next);
-
       const meta = metaFor(next);
-      // Announce state changes for screen-reader users (not color-dependent).
       AccessibilityInfo.announceForAccessibility(meta.accessibilityLabel);
-
       if (meta.transient) {
         transientTimer.current = setTimeout(() => {
+          stateRef.current = 'IDLE';
           setStateInternal('IDLE');
           transientTimer.current = null;
         }, TRANSIENT_DURATION_MS);
@@ -71,30 +71,50 @@ export function ArenStateProvider({
     [clearTransient],
   );
 
-  const toggleListening = useCallback(() => {
-    setState(state === 'LISTENING' ? 'IDLE' : 'LISTENING');
-  }, [state, setState]);
+  // Developer-simulator / manual override: interrupt any in-flight runtime
+  // lifecycle, then force the requested state.
+  const setState = useCallback(
+    (next: ArenState) => {
+      rt.interrupt();
+      applyState(next);
+    },
+    [applyState, rt],
+  );
 
-  // Connect the runtime once on mount and mirror its status into React state.
+  const toggleListening = useCallback(() => {
+    if (stateRef.current === 'LISTENING' || stateRef.current === 'HEARING') {
+      rt.stopListening();
+    } else {
+      rt.startListening();
+    }
+  }, [rt]);
+
+  // Wire runtime events into the provider once, and connect.
   useEffect(() => {
-    const rt = runtimeRef.current;
-    rt.setEvents({ onStatusChange: setConnection });
+    rt.setEvents({
+      onStatusChange: setConnection,
+      onPhase: applyState,
+      onResponseComplete: () => applyState('IDLE'),
+      onInterrupted: () => applyState('LISTENING'),
+      onError: () => setConnection('error'),
+    });
     rt.connect();
     return () => {
       clearTransient();
       rt.disconnect();
     };
-  }, [clearTransient]);
+  }, [rt, applyState, clearTransient]);
 
   const value = useMemo<ArenStateValue>(
     () => ({
       state,
       meta: metaFor(state),
       connection,
+      runtimeLabel: rt.displayName,
       setState,
       toggleListening,
     }),
-    [state, connection, setState, toggleListening],
+    [state, connection, rt, setState, toggleListening],
   );
 
   return <ArenStateContext.Provider value={value}>{children}</ArenStateContext.Provider>;

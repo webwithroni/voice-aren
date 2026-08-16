@@ -50,6 +50,19 @@ Orb = 5 layered SVG components animated with Reanimated 4.
 - Verified: typecheck ✅, lint ✅, Android expo export (Skia+worklets) ✅,
   engine numeric validation ✅. Not run on a physical device in this env.
 
+## Phase 02 (2026-06) — Voice runtime + Gemini Live architecture
+- Built full `VoiceRuntime` capability set (connect/disconnect/start/stop/
+  sendAudio/sendText/interrupt + lifecycle events) under `src/services/voice/`.
+- `LocalEchoVoiceRuntime` (SIMULATED, default) drives the real Orb lifecycle;
+  `GeminiLiveVoiceRuntime` architected around `gemini-3.1-flash-live-preview`
+  with an ephemeral-token seam but connection DISABLED (no key in client).
+- Audio foundation: PCM 16 kHz in / 24 kHz out formats + capture/playback
+  interfaces (native impl deferred to a dev build).
+- AREN state machine remains single source of truth; runtimes are event sources.
+- Verified: typecheck ✅, lint ✅, Android export ✅, 20 logic assertions ✅.
+- STOPPED for on-device sign-off (Expo Go) before Phase 03. Real mic/audio and
+  Gemini Live require device + backend and are NOT implemented.
+
 ## Backlog
 - P0 (Phase 02): GeminiLiveVoiceRuntime behind VoiceRuntime seam; mic pipeline;
   audio streaming; authoritative runtime→Orb state sync; connection recovery.

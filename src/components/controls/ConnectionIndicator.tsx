@@ -12,6 +12,8 @@ interface ConnectionIndicatorProps {
 const STATUS_META: Record<VoiceRuntimeStatus, { label: string; color: string }> = {
   connected: { label: 'Connected', color: colors.semantic.live },
   connecting: { label: 'Connecting', color: colors.semantic.warning },
+  reconnecting: { label: 'Reconnecting', color: colors.semantic.warning },
+  error: { label: 'Connection error', color: colors.semantic.error },
   disconnected: { label: 'Offline', color: colors.semantic.offline },
 };
 

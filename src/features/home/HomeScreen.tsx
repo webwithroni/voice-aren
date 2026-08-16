@@ -19,7 +19,7 @@ import { useArenState } from '@/hooks';
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const { state, meta, connection, setState, toggleListening } = useArenState();
+  const { state, meta, connection, setState, toggleListening, runtimeLabel } = useArenState();
 
   const orbSize = Math.min(width * 0.82, height * 0.42, 340);
 
@@ -53,7 +53,7 @@ export function HomeScreen() {
 
       {__DEV__ ? (
         <View style={styles.bottom}>
-          <StateSimulator current={state} onSelect={setState} />
+          <StateSimulator current={state} onSelect={setState} runtimeLabel={runtimeLabel} />
         </View>
       ) : null}
     </View>

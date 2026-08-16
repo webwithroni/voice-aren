@@ -34,8 +34,10 @@ The dependency direction above is enforced in code:
 - State (`src/state/arenState`) exposes `ArenState` via React Context and holds
   a reference to a `VoiceRuntime` implementation — never to Gemini directly.
 - `VoiceRuntime` (`src/types/aren.ts`) is the abstraction seam. Phase 01 ships
-  `LocalVoiceRuntime` (no network, no fabricated responses). Phase 02 will add a
-  `GeminiLiveVoiceRuntime` implementing the same interface with no UI changes.
+  `LocalEchoVoiceRuntime` (no network, no fabricated responses). Phase 02 adds a
+  disabled `GeminiLiveVoiceRuntime` (ephemeral-token seam, no client key); the
+  UI/state layer is unchanged. Runtimes are event sources — the
+  `ArenStateProvider` remains the single AREN state machine.
 
 ## State Model
 
