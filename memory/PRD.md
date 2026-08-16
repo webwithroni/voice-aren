@@ -35,6 +35,21 @@ Orb = 5 layered SVG components animated with Reanimated 4.
 - Verified: `yarn typecheck` ✅, `yarn lint` ✅, Android `expo export` (1796
   modules) ✅. Not run on a physical Android device in this environment.
 
+## Orb replacement (2026-06) — Native Skia thought-orb
+- Replaced the placeholder gradient-sphere Orb with a native
+  `@shopify/react-native-skia` dotted "thought-orb" (Expo Go SDK 57, no dev
+  build, no WebGL). Inspiration (concepts only) from thinking-orbs (MIT);
+  attribution in docs/ATTRIBUTIONS.md.
+- Architecture: `orbEngine.ts` (pure worklet geometry → draw list),
+  `orbProfiles.ts` (per-state continuous params), `Orb.tsx` (Skia layers:
+  atmosphere, rings, 48-dot particle field, inner energy, core). State changes
+  cross-fade by interpolating profiles; UI-thread only, zero React re-renders.
+- State model changed to the 12 canonical states: dropped PAUSED, added
+  SEARCHING (scan meridian). Old SVG layer components removed.
+- Developer state simulator gated to `__DEV__` only (not in consumer UI).
+- Verified: typecheck ✅, lint ✅, Android expo export (Skia+worklets) ✅,
+  engine numeric validation ✅. Not run on a physical device in this env.
+
 ## Backlog
 - P0 (Phase 02): GeminiLiveVoiceRuntime behind VoiceRuntime seam; mic pipeline;
   audio streaming; authoritative runtime→Orb state sync; connection recovery.

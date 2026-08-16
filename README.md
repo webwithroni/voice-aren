@@ -36,22 +36,26 @@ CONTROL
 
 The AREN Orb is the primary visual expression of the assistant.
 
-The Orb communicates:
+The Orb communicates AREN's 12 canonical states:
 
+- Idle
 - Listening
 - Hearing
 - Thinking
 - Planning
+- Searching
 - Executing
 - Speaking
 - Verifying
 - Success
 - Error
-- Paused
 - Offline
-- Backup
 
-The Orb is not simply a button. It is a state visualization system.
+The Orb is not simply a button. It is a state visualization system. It is
+rendered natively with `@shopify/react-native-skia` as a dotted "thought-orb",
+taking visual inspiration (concepts only) from the MIT-licensed
+[thinking-orbs](https://github.com/Jakubantalik/thinking-orbs) project —
+see [docs/ATTRIBUTIONS.md](docs/ATTRIBUTIONS.md).
 
 ## Technology Direction
 
@@ -62,9 +66,9 @@ a cross-platform Expo / React Native foundation:
 - React Native (New Architecture)
 - TypeScript (strict)
 - Expo Router (file-based routing)
-- React Native Reanimated (Orb motion / state animation)
+- React Native Reanimated (Orb motion / state cross-fades)
 - React Native Gesture Handler (Orb voice-surface interaction)
-- React Native SVG (layered Orb rendering)
+- `@shopify/react-native-skia` (native dotted-orb rendering — bundled in Expo Go)
 - Feature-based architecture with centralized design tokens
 
 The voice runtime is kept behind an abstraction seam so the transport can

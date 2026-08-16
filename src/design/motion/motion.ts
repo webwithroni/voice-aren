@@ -1,15 +1,16 @@
 import { Easing } from 'react-native-reanimated';
 
 /**
- * Motion tokens. The Orb reads richer per-state motion from `orbMotion.ts`;
- * these are the shared durations/easings for general UI transitions.
+ * Motion tokens. Durations follow the AREN transition bands:
+ * micro (tap/press feedback), standard (UI transitions), expressive (Orb state
+ * cross-fades), ambient (continuous breathing / orbital motion).
  */
 export const motion = {
   duration: {
-    micro: 120,
-    short: 220,
-    medium: 320,
-    long: 500,
+    micro: 140, // 100–160ms
+    standard: 260, // 200–320ms
+    expressive: 520, // 400–700ms
+    ambient: 4000, // 2–8s continuous
   },
   easing: {
     standard: Easing.bezier(0.4, 0, 0.2, 1),

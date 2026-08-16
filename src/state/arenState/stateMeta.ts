@@ -42,6 +42,13 @@ export const STATE_META: Record<ArenState, ArenStateMeta> = {
     semanticColor: colors.semantic.executing,
     transient: false,
   },
+  SEARCHING: {
+    state: 'SEARCHING',
+    label: 'Searching',
+    accessibilityLabel: 'AREN is searching.',
+    semanticColor: colors.semantic.live,
+    transient: false,
+  },
   EXECUTING: {
     state: 'EXECUTING',
     label: 'Working',
@@ -75,13 +82,6 @@ export const STATE_META: Record<ArenState, ArenStateMeta> = {
     label: 'Something went wrong',
     accessibilityLabel: 'AREN ran into a problem.',
     semanticColor: colors.semantic.error,
-    transient: false,
-  },
-  PAUSED: {
-    state: 'PAUSED',
-    label: 'Paused',
-    accessibilityLabel: 'AREN is paused.',
-    semanticColor: colors.semantic.warning,
     transient: false,
   },
   OFFLINE: {

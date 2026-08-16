@@ -20,7 +20,7 @@ phase — by design.
 | Routing        | Expo Router (file-based, root `src/app`)       |
 | Animation      | React Native Reanimated 4                      |
 | Gestures       | React Native Gesture Handler                   |
-| Vector/Orb     | React Native SVG                               |
+| Orb rendering  | `@shopify/react-native-skia` (Expo Go SDK 57)  |
 | Fonts          | Inter via `@expo-google-fonts/inter`           |
 | Android package| `com.webwithroni.aren`                         |
 
@@ -33,12 +33,13 @@ src/
 │   └── index.tsx            # Home route
 ├── components/
 │   ├── base/                # AppText, Surface (token-driven primitives)
-│   ├── orb/                 # Orb + orbMotion + 5 layers
-│   │   └── layers/          # OuterAtmosphere, ParticleField, PrimaryField,
-│   │                        # InnerEnergy, OrbCore
+│   ├── orb/                 # Skia Orb + geometry engine + state profiles
+│   │   ├── Orb.tsx          # Skia canvas: atmosphere, rings, particles, core
+│   │   ├── orbEngine.ts     # Pure worklet math → per-frame draw list
+│   │   └── orbProfiles.ts   # Per-state continuous parameters (cross-faded)
 │   ├── status/              # StatusLabel
 │   ├── voice/               # VoiceSurface (Orb as the voice surface)
-│   └── controls/            # ConnectionIndicator, StateSimulator
+│   └── controls/            # ConnectionIndicator, StateSimulator (dev-only)
 ├── design/                  # Centralized tokens
 │   ├── colors/ typography/ spacing/ radius/ motion/
 │   └── index.ts             # Barrel — import from '@/design'
@@ -62,25 +63,54 @@ UI  →  AREN State  →  VoiceRuntime (interface)  →  [Phase 02] Gemini Live 
   no network, no audio, **no fabricated assistant responses**.
 - The UI never imports a concrete runtime — only `useArenState()`.
 
-## The Orb
+## The Orb (native Skia thought-orb)
 
-A reusable animated component (not a static image) composed of five layers,
-maintaining one constant AREN identity across every state:
+The Orb is a native, GPU-rasterised **dotted thought-orb** rendered with
+`@shopify/react-native-skia` — not a gradient sphere and not a static image. It
+keeps one recognisable AREN identity (spectral particles on a tilted globe)
+across every state.
 
-`Outer atmosphere → Particle field → Primary field → Inner energy → Core`
+**Layers:**
 
-State is communicated through **motion** + a subtly tinted core (never by
-redrawing the orb). Per-state motion lives in `src/components/orb/orbMotion.ts`.
+```
+06 Outer atmosphere   soft radial glow (blurred)
+03 Orbital rings      two tilted, counter-rotating stroked ellipses
+04 Particle field     48 depth-shaded dots on a Fibonacci sphere
+05 State geometry     scan meridian / rolling waveform / traveling highlight
+02 Inner energy       blurred central bloom
+01 Core               tinted, blurred core + bright center
+07 Interaction        tap toggles LISTENING; state morph is the response
+```
 
-**States:** IDLE, LISTENING, HEARING, THINKING, PLANNING, EXECUTING, SPEAKING,
-VERIFYING, SUCCESS, ERROR, PAUSED, OFFLINE. All are local simulated states in
-Phase 01, driven by the **developer state simulator** on the home screen.
+**How it works (no React re-renders during animation):**
+
+- `orbEngine.ts` holds pure, closure-free **Reanimated worklet** math. Given an
+  `OrbProfile` and a time value it returns a finished draw list (dots + core /
+  ring / atmosphere scalars). Validated: all 12 states produce finite,
+  in-range values for 48 dots across sampled timestamps.
+- `orbProfiles.ts` describes each state as **continuous parameters** (energy,
+  spin, wave, scan, converge, expand, direction, structure, disrupt, density,
+  desat, core, ring, breath).
+- State changes **cross-fade** by interpolating between the previous and target
+  profile (`withTiming`, expressive easing) — never an instant swap.
+- The animation clock is Skia's `useClock`; geometry runs on the UI thread and
+  feeds Skia shape props directly. React does not re-render per frame.
+
+**States (12 canonical):** IDLE, LISTENING, HEARING, THINKING, PLANNING,
+SEARCHING, EXECUTING, SPEAKING, VERIFYING, SUCCESS, ERROR, OFFLINE. All are
+local simulated states in Phase 01, driven by the **developer-only** state
+simulator (rendered only when `__DEV__`).
+
+Behavioural language (dotted globe, scan meridian, rolling waveform) is adapted
+from Jakub Antalik's **thinking-orbs** (MIT) — concepts only, no code copied.
+See [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
 
 ## Interaction
 
 - **Tap the Orb:** IDLE → LISTENING; tap again: LISTENING → IDLE.
 - The Orb itself is the voice surface — there is no primary microphone button.
-- The developer simulator exposes every other state.
+- The **developer-only** simulator (shown only in `__DEV__`) exposes all 12
+  states; it is never part of the consumer interface.
 
 ## Accessibility
 
@@ -104,21 +134,26 @@ duplicated raw colors/spacing in components):
 
 ## Project checks (this build)
 
-| Check                         | Result                                             |
-| ----------------------------- | -------------------------------------------------- |
-| `yarn install`                | ✅ Pass                                            |
-| `yarn typecheck` (tsc strict) | ✅ Pass (0 errors)                                 |
-| `yarn lint` (eslint)          | ✅ Pass (0 errors, 0 warnings)                     |
-| `expo export` (Android graph) | ✅ Pass — 1796 modules bundled (JSC engine)        |
-| Android device run            | ⏳ Verify locally (`yarn android`)                 |
+| Check                          | Result                                                   |
+| ------------------------------ | -------------------------------------------------------- |
+| `yarn typecheck` (tsc strict)  | ✅ Pass (0 errors)                                       |
+| `yarn lint` (eslint)           | ✅ Pass (0 errors, 0 warnings)                           |
+| `expo export` (Android graph)  | ✅ Pass — Skia + Reanimated worklets bundled (JSC)       |
+| Orb engine numeric validation  | ✅ Pass — 12 states finite, in-range, 48 dots, lerp OK   |
+| No browser-only dependency     | ✅ Skia is native; no WebGL / DOM APIs used              |
+| Android device run             | ⏳ Verify locally (`yarn android` / Expo Go)             |
 
 ## Known limitations
 
-- **Not run on a physical Android device in this environment.** The build was
-  validated via typecheck, lint, and a full Metro export of the Android JS
-  graph. Hermes **bytecode** compilation could not run here because the CI
-  container is `aarch64` while the bundled `hermesc` is an x86_64 binary — an
-  environment-only limitation. Run `yarn android` on your machine to verify.
+- **Not run on a physical Android device in this environment.** Validated via
+  typecheck, lint, a full Metro export of the Android JS graph (Skia +
+  worklets), and a numeric validation of the Orb geometry engine. Hermes
+  **bytecode** compilation cannot run in this container (`aarch64` host vs the
+  bundled x86_64 `hermesc`) — an environment-only limitation, so export was run
+  with the JSC engine. Run `yarn android` (or Expo Go) on your machine to see
+  the live Orb.
+- `@shopify/react-native-skia` is bundled in Expo Go for SDK 57, so no custom
+  dev build is required.
 - Simulated states only — no live audio, no Gemini (by design for Phase 01).
 - `LocalVoiceRuntime` reports "connected" immediately (local, always available).
 

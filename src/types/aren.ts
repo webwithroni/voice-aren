@@ -2,19 +2,19 @@
  * Core AREN domain types shared across UI, state, and (future) voice runtime.
  */
 
-/** All AREN presence states. Order is intentional (lifecycle order). */
+/** The 12 canonical AREN presence states. Order is intentional (lifecycle). */
 export const AREN_STATES = [
   'IDLE',
   'LISTENING',
   'HEARING',
   'THINKING',
   'PLANNING',
+  'SEARCHING',
   'EXECUTING',
   'SPEAKING',
   'VERIFYING',
   'SUCCESS',
   'ERROR',
-  'PAUSED',
   'OFFLINE',
 ] as const;
 

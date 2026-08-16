@@ -39,19 +39,20 @@ The dependency direction above is enforced in code:
 
 ## State Model
 
+The 12 canonical AREN presence states (see `src/types/aren.ts`):
+
 IDLE
 LISTENING
 HEARING
 THINKING
 PLANNING
+SEARCHING
 EXECUTING
 SPEAKING
 VERIFYING
 SUCCESS
 ERROR
-PAUSED
 OFFLINE
-BACKUP
 
 ## Future Voice Pipeline
 
